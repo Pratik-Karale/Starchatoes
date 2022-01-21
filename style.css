@@ -1,0 +1,21 @@
+
+body{
+    display: grid;
+    place-items: center;
+    height: 97vh;
+    width: 98vw;
+    overflow: hidden;
+}
+
+.main-container{
+    display: relative;
+    width:352px;
+    height: 198px;
+    outline:1px solid aliceblue;
+    transform: scale(2);
+}
+canvas{
+    width:100%;
+    height:100%;
+    image-rendering: pixelated;
+}
