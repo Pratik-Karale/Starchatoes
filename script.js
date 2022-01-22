@@ -1,99 +1,118 @@
-// TODO: hero is able to move but would be nice 
-// if u could cut hero.png properly to show the appropriate direction
+const mainContainer = document.querySelector(".main-container")
+const canvasElem = document.querySelector("canvas")
+const canvasCtx = canvasElem.getContext("2d")
 
-class Map{
-    // takes in mapName  it should be same as the prefix names used in images/maps/
-    // example passing it name="Demo" will be converted to 
-    // appropriate src(mages/maps/DemoUpper.png and mages/maps/DemoUpper.png)
-    constructor(mapName){
-        this.upperSrc="images/maps/"+mapName+"Upper.png"
-        this.upperImage = new Image();
-        this.upperImage.src=this.upperSrc
-        this.upperImage.onload = () => {
-            this.canDrawUpper=true
-        };
+let gamePaused = false
+let mapNow = maps.Demo
 
-        this.lowerSrc="images/maps/"+mapName+"Lower.png"
-        this.lowerImage = new Image();
-        this.lowerImage.src=this.lowerSrc
-        console.log(this.lowerImage)
-        this.lowerImage.onload = () => {
-            this.canDrawLower=true
-        };
+
+let screenMap = new Map(mapNow.lowerSrc, mapNow.upperSrc)
+let charObstacles = Object.values(mapNow.gameObjects).map(
+    (gameObject) => {
+        return `${gameObject.x},${gameObject.y}`;
     }
-    drawLower(ctx){
-        if(this.canDrawLower){
-            ctx.drawImage(this.lowerImage,0,0)
-        }}
-    drawUpper(ctx){
-        if(this.canDrawUpper){
-            ctx.drawImage(this.upperImage,0,0)
+)
+
+let allWalls = [...mapNow.walls, ...charObstacles]
+
+
+function moveChars() {
+    Object.values(mapNow.gameObjects).forEach(
+        (gameObject) => {
+            if (mapNow.defaultMovement.hasOwnProperty(gameObject.name)) {
+                directions = mapNow.defaultMovement[gameObject.name]
+                if (gameObject.canMove(directions[gameObject.currentPredefinedMoveIndex], allWalls) && !gamePaused) {
+                    allWalls.splice(allWalls.indexOf(`${gameObject.x},${gameObject.y}`), 1)
+                    gameObject.move(directions[gameObject.currentPredefinedMoveIndex])
+                    allWalls.push(`${gameObject.x},${gameObject.y}`)
+                }
+                gameObject.currentPredefinedMoveIndex++
+                if (gameObject.currentPredefinedMoveIndex == directions.length)
+                    gameObject.currentPredefinedMoveIndex = 0;
+            }
         }
-    }
+    )
 }
 
-class Hero{
-    constructor(x,y){
-        this.x=x || 0
-        this.y=y || 0
-        this.src="images/characters/people/hero.png"
-        this.image=new Image()
-        this.image.src=this.src
-        this.canDraw=false
-        this.image.onload=()=>{
-            this.canDraw=true
-        }
-        this.direction="down"
-    }
-    // 1unit of x coord =16px 
-    draw(ctx){
-        if(this.canDraw){
-            const x=this.x
-            const y=this.y
-            ctx.drawImage(this.image,
-                0,0,32,32, // replace the 0,0 with needed x,y val for the cut
-                x*16-8,y*16-18,
-                32,32)
-        }
-    }
-    move(direction){
-        console.log(direction)
-        switch (direction) {
-            case "down":
-                this.y++
-                break;
-            case "up":
-                this.y--
-                break;
-            case "right":
-                this.x++
-                break;
-            case "left":
-                this.x--
-                break;
-        }
-    }
+let frame = 0
+function step() {
+    let camX = mapNow.gameObjects.hero.x
+    let camY = mapNow.gameObjects.hero.y
 
-}
-
-const canvasElem=document.querySelector("canvas")
-const canvasCtx=canvasElem.getContext("2d")
-
-
-let demoMap=new Map("Demo")
-let hero=new Hero()
-// intead of using requestAnimationFrame setInterval is used 
-setInterval(()=>{
     canvasCtx.clearRect(0, 0, canvasElem.width, canvasElem.height);
-    demoMap.drawLower(canvasCtx)
-    hero.draw(canvasCtx)
-    demoMap.drawUpper(canvasCtx)
-},200)
+
+    screenMap.drawLower(canvasCtx, camX, camY)
+
+    if (!(frame % 250)) moveChars();
+
+    const sortedGameObjects = Object.entries(mapNow.gameObjects).sort((a, b) => b[1].y - a[1].y)
+    for (gameObject of sortedGameObjects) {
+        if (gameObject[1].name == "hero") {
+            gameObject[1].draw(canvasCtx)
+            continue
+        }
+        gameObject[1].draw(canvasCtx, camX, camY)
+    }
 
 
-document.addEventListener("keydown",(e)=>{
-    if(e.code.toLowerCase().includes("arrow")){
-        const direction=e.code.toLowerCase().slice(5,e.code.length)
-        hero.move(direction)
+    screenMap.drawUpper(canvasCtx, camX, camY)
+
+    frame++
+    if (frame > 300) frame = 0;
+
+    requestAnimationFrame(() => step())
+}
+step()
+
+
+document.addEventListener("keydown", (e) => {
+    if (e.code.toLowerCase().includes("arrow")) {
+        const direction = e.code.toLowerCase().slice(5, e.code.length)
+        // console.log([...mapNow.walls,...charObstacles])
+        if (mapNow.gameObjects.hero.canMove(direction, allWalls) && !gamePaused) {
+            allWalls.splice(allWalls.indexOf(`${mapNow.gameObjects.hero.x},${mapNow.gameObjects.hero.y}`), 1)
+            mapNow.gameObjects.hero.move(direction)
+            if (mapNow.doors.hasOwnProperty(`${mapNow.gameObjects.hero.x},${mapNow.gameObjects.hero.y}`)) {
+                screenMap.exitMap()
+                changeMap(mapNow.doors[`${mapNow.gameObjects.hero.x},${mapNow.gameObjects.hero.y}`])
+                screenMap.enterMap()
+            }
+            allWalls.push(`${mapNow.gameObjects.hero.x},${mapNow.gameObjects.hero.y}`)
+        }
+    }
+
+    if (e.code == "Enter" && !mapNow.gameObjects.hero.canMove(mapNow.gameObjects.hero.direction, allWalls) && !gamePaused) {
+        let otherChar = Object.entries(mapNow.gameObjects).find(
+            (keyVal) => mapNow.gameObjects.hero.coordInFront(keyVal[1].x, keyVal[1].y)
+        )
+        otherChar = otherChar[1]
+        if (mapNow.dialogues.hasOwnProperty(otherChar.name)) {
+            if (mapNow.dialogues[otherChar.name].hasOwnProperty("ask")) {
+                otherChar.ask(mapNow.dialogues[otherChar.name].ask, { yes: mapNow.dialogues[otherChar.name].yes, no: mapNow.dialogues[otherChar.name].no })
+            } else {
+                otherChar.speak(mapNow.dialogues[otherChar.name].msg)
+            }
+        }
     }
 })
+document.addEventListener("keyup", (e) => {
+    if (e.code.toLowerCase().includes("arrow")) {
+        const direction = e.code.toLowerCase().slice(5, e.code.length)
+        mapNow.gameObjects.hero.pause(direction)
+    }
+})
+function changeMap(name) {
+    gamePaused = false
+    mapNow = maps[name]
+
+    screenMap = new Map(mapNow.lowerSrc, mapNow.upperSrc)
+    charObstacles = Object.values(mapNow.gameObjects).map(
+        (gameObject) => {
+            return `${gameObject.x},${gameObject.y}`;
+        }
+    )
+
+    allWalls = [...mapNow.walls, ...charObstacles]
+    setTimeout(()=>{allWalls.splice(-1,1)},1000)
+
+}
