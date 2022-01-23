@@ -144,10 +144,140 @@ body{
     opacity: 0;
 }
 .transition-layer{
-    
+    opacity: 1;
+    background-color: rgb(255, 255, 255);
+    animation-name: flash-screen;
+    animation-duration: 3s;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left:0
 }
-.transition-layer-active{
-    background-color: white;
+
+@keyframes flash-screen {
+    0% {opacity: 1;}
+    100% {opacity: 0;}
+  }
+
+
+
+
+.battle-screen{
+    position: absolute;
+    top:0;
+    bottom:0;
+    right:0;
+    left:0;
+    background: url(./images/maps/GreenKitchenBattle.png);
+}
+.battle-screen>*{
+    position: absolute;
+}
+
+.crop {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    overflow: hidden;
+    transform: scale(2);
+}
+.crop-hero{
+    bottom:80px;
+    left: 40px;
+}
+
+.crop-opp{
+    top: 28px;
+    right: 24px;
+}
+
+.hero-hp-box{
+    bottom: 100px;
+}
+.crop img[src="images/characters/people/hero.png"] {
+    margin: -64px 0px 0px;
+    image-rendering: pixelated;
+}
+
+.opp-hp-box{
+    right: 3px;
+    top:20px;
+}
+
+.crop img{
+    image-rendering: pixelated;
+}
+
+.battle-screen progress{
+    width:70px;
 }
 
 
+@import url('https://fonts.googleapis.com/css2?family=Ribeye&display=swap');
+*{
+    font-family: 'Ribeye', cursive;
+}
+body{
+    background-color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: black;
+    width:352px ;
+    height: 198px;
+    color: white;
+    border:2px solid black;
+    transform: scale(3) translateY(50%);
+    animation: bouncing 0.5s ease 0s infinite alternate both;
+}
+.rick{
+    height: 81px;
+    max-width: 180px;
+}
+.start{
+    color: white;
+    margin-top: 10px;
+    /* border-radius: 10px; */
+    outline: none;
+    font-size: 8px;
+    background-color: #26c1a4;
+    border: none;
+
+
+}
+.start:hover{
+    background-color: teal;
+    cursor: pointer;
+}
+@keyframes bouncing {
+    0%{
+        bottom: 0;
+        box-shadow: 0 0 5px rgba(236, 233, 233, 0.5)
+    }
+    100%{
+        bottom: 50px;
+        box-shadow: 0 50px 50px rgba(160, 160, 160, 0.1);
+    }
+}
+
+
+.wrap{
+    position: absolute;
+    display: grid;
+    place-items: center;
+    top:0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+}
+.wrap .container{
+    position: absolute;
+    top: 0;
+}

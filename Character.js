@@ -1,5 +1,7 @@
 class Character {
-    constructor(name, x, y) {
+    constructor(name, x, y,friendly) {
+        this.hp=100
+        this.friendly=(friendly===undefined)?true:false
         this.name = name
         this.currentPredefinedMoveIndex = 0
         this.x = x || 0
@@ -152,6 +154,10 @@ class Character {
         });
         const completeMessage = () => messageCharElems.forEach(elem => elem.classList.remove("hidden-char"))
         messageBox.addEventListener("click", () => {
+
+            if(document.querySelector(".battle-screen")){
+                return
+            }
             if (messageBox.querySelector(".hidden-char") == null) {
                 messageBox.remove()
                 gamePaused = false
@@ -159,6 +165,9 @@ class Character {
             completeMessage()
         })
         document.addEventListener("keydown", (e) => {
+            if(document.querySelector(".battle-screen")){
+                return
+            }
             if (e.code == "Enter") {
                 if (messageBox.querySelector(".hidden-char") == null) {
                     messageBox.remove()

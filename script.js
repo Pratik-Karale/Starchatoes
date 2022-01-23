@@ -5,6 +5,15 @@ const canvasCtx = canvasElem.getContext("2d")
 let gamePaused = false
 let mapNow = maps.Demo
 
+function flashScreen(){
+    let overlay=document.createElement("div")
+    mainContainer.appendChild(overlay)
+    overlay.classList.add("transition-layer")
+    setTimeout(()=>{
+        overlay.remove()
+    },3000)
+}
+
 
 let screenMap = new Map(mapNow.lowerSrc, mapNow.upperSrc)
 let charObstacles = Object.values(mapNow.gameObjects).map(
@@ -17,11 +26,13 @@ let allWalls = [...mapNow.walls, ...charObstacles]
 
 
 function moveChars() {
+    console.log(gamePaused)
+    if (gamePaused)return;
     Object.values(mapNow.gameObjects).forEach(
         (gameObject) => {
-            if (mapNow.defaultMovement.hasOwnProperty(gameObject.name)) {
+            if (mapNow.defaultMovement.hasOwnProperty(gameObject.name) && !gamePaused) {
                 directions = mapNow.defaultMovement[gameObject.name]
-                if (gameObject.canMove(directions[gameObject.currentPredefinedMoveIndex], allWalls) && !gamePaused) {
+                if (gameObject.canMove(directions[gameObject.currentPredefinedMoveIndex], allWalls)) {
                     allWalls.splice(allWalls.indexOf(`${gameObject.x},${gameObject.y}`), 1)
                     gameObject.move(directions[gameObject.currentPredefinedMoveIndex])
                     allWalls.push(`${gameObject.x},${gameObject.y}`)
@@ -73,15 +84,14 @@ document.addEventListener("keydown", (e) => {
             allWalls.splice(allWalls.indexOf(`${mapNow.gameObjects.hero.x},${mapNow.gameObjects.hero.y}`), 1)
             mapNow.gameObjects.hero.move(direction)
             if (mapNow.doors.hasOwnProperty(`${mapNow.gameObjects.hero.x},${mapNow.gameObjects.hero.y}`)) {
-                screenMap.exitMap()
+                flashScreen()
                 changeMap(mapNow.doors[`${mapNow.gameObjects.hero.x},${mapNow.gameObjects.hero.y}`])
-                screenMap.enterMap()
             }
             allWalls.push(`${mapNow.gameObjects.hero.x},${mapNow.gameObjects.hero.y}`)
         }
     }
 
-    if (e.code == "Enter" && !mapNow.gameObjects.hero.canMove(mapNow.gameObjects.hero.direction, allWalls) && !gamePaused) {
+    if (e.code == "Enter" && !mapNow.gameObjects.hero.canMove(mapNow.gameObjects.hero.direction, allWalls) && !gamePaused && !document.querySelector(".message-box") && !document.querySelector(".ask-box") && !document.querySelector(".container")) {
         let otherChar = Object.entries(mapNow.gameObjects).find(
             (keyVal) => mapNow.gameObjects.hero.coordInFront(keyVal[1].x, keyVal[1].y)
         )
@@ -92,6 +102,11 @@ document.addEventListener("keydown", (e) => {
             } else {
                 otherChar.speak(mapNow.dialogues[otherChar.name].msg)
             }
+        }
+        if(!otherChar.friendly){
+            const battle=new Battle(mapNow.gameObjects.hero,otherChar)
+            flashScreen()
+            battle.start()
         }
     }
 })
