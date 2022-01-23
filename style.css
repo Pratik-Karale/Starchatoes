@@ -63,8 +63,9 @@ body{
     animation-fill-mode: forwards;
 }
 .image{
-    width: 80px;
+    width: 70px;
     animation: bouncing 0.5s ease 0s infinite alternate both;
+    image-rendering: -webkit-optimize-contrast;
 }
 @keyframes bouncing {
     0%{
