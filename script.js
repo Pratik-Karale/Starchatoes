@@ -3,7 +3,7 @@ const canvasElem = document.querySelector("canvas")
 const canvasCtx = canvasElem.getContext("2d")
 
 let gamePaused = false
-let mapNow = maps.Demo
+let mapNow = maps.factoryFrontSide
 
 function flashScreen(){
     let overlay=document.createElement("div")
@@ -26,7 +26,7 @@ let allWalls = [...mapNow.walls, ...charObstacles]
 
 
 function moveChars() {
-    console.log(gamePaused)
+    // console.log(gamePaused)
     if (gamePaused)return;
     Object.values(mapNow.gameObjects).forEach(
         (gameObject) => {

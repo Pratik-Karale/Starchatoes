@@ -13,6 +13,7 @@ class Character {
         this.image.onload = () => {
             this.canDraw = true
         }
+        this.path=[]
         this.frameXCoords = 0
         this.frameYCoords = 0
         this.direction = "down"
@@ -67,7 +68,9 @@ class Character {
                 this.x--
                 break;
         }
-        console.log({ x: this.x, y: this.y })
+        this.path.push(`${this.x},${this.y}`)
+        if(this.name=="hero")
+            console.log({ x: this.x, y: this.y });
     }
     get atLastFrame() {
         return (this.frameXCoords / 32) > 2
@@ -95,11 +98,10 @@ class Character {
     }
     canMove(direction, walls) {
         walls = JSON.stringify(walls)
-        console.log(walls)
         switch (direction) {
             case "down":
-                console.log(JSON.stringify(`${this.x},${this.y + 1}`))
-                console.log(walls)
+                // console.log(JSON.stringify(`${this.x},${this.y + 1}`))
+                // console.log(walls)
                 if (walls.includes(JSON.stringify(`${this.x},${this.y + 1}`))) return false;
                 break;
             case "up":
